@@ -20,6 +20,7 @@ import shutil
 from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 settings = config.Settings()
 
@@ -232,3 +233,16 @@ def try_work_test(answer:str,id:int,db:Session=Depends(get_db),user=Depends(get_
 
             
 
+############CORS
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+#############
