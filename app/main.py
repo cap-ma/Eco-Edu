@@ -1,5 +1,5 @@
-import asyncio
-from fastapi import FastAPI, Form, Cookie, status
+from re import A
+from fastapi import FastAPI, Form, Cookie, status,Depends,UploadFile,File
 from fastapi.responses import FileResponse, RedirectResponse
 from twilio.rest import Client
 from datetime import datetime, timedelta
@@ -16,8 +16,10 @@ from schemas import schema
 from dotenv import load_dotenv
 import os 
 import config 
-
+import shutil
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 
 settings = config.Settings()
 
@@ -33,6 +35,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES=int(ACCESS_TOKEN_EXPIRE_MINUTES_STR)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
+class foo(BaseModel):
+    id:int
+    class Config:
+        orm_mode = True
+
+
 def get_db():
     db=datahub.SessionLocal()
     try:
@@ -42,7 +50,7 @@ def get_db():
 
 
 
-def send_verification_code(email):
+"""def send_verification_code(email):
     verification = client.verify.services(
         settings.twilio_verify_service).verifications.create(
             to=email, channel='email')
@@ -85,7 +93,7 @@ async def verify_code(email: str = Cookie(None), code: str = Form(...)):
 @app.get('/success')
 async def success():
     return FileResponse('success.html')
-
+"""
 
 def get_current_user(db:Session=Depends(get_db) ,token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -138,4 +146,89 @@ async def user_create(user:schema.UserCreate,db:Session=Depends(get_db)):
 
     return logic.create_user(user=user,db=db)
 
+##########Task########################
+@app.post("/tasks")
+def post_tasks(name:str,description:str,point:int,image1:UploadFile=File(...),image2:UploadFile=File(...),image3:UploadFile=File(...),db:Session=Depends(get_db)):
+    with open("tasks/"+image1.filename,"wb") as image1_:
+        shutil.copyfileobj(image1.file,image1_)
+    url1=str("tasks/"+image1.filename)  
+
+    with open("tasks/"+image2.filename,"wb") as image2_:
+        shutil.copyfileobj(image2.file,image2_)
+    url2=str("tasks/"+image2.filename)  
+
+
+    with open("tasks/"+image3.filename,"wb") as image3_:
+        shutil.copyfileobj(image3.file,image3_)
+    url3=str("tasks/"+image3.filename)  
+
+    return  logic.create_tasks(db=db,name=name,description=description,image1=url1,image2=url2,image3=url3,point=point)
+
+
+@app.get("/tasks/image1/{id}")
+def get_tasks_image1(id:int,db:Session=Depends(get_db)):
+    a=logic.get_tasks_image1_logic(db=db,id=id)
+    return FileResponse(a,media_type="image/jpg")
+
+@app.get("/tasks/image2/{id}")
+def get_tasks_image2(id:int,db:Session=Depends(get_db)):
+    a=logic.get_tasks_image2_logic(db=db,id=id)
+    return FileResponse(a,media_type="image/jpg")
+
+@app.get("/tasks/image3/{id}")
+def get_tasks_image3(id:int,db:Session=Depends(get_db)):
+    a=logic.get_tasks_image3_logic(db=db,id=id)
+    return FileResponse(a,media_type="image/jpg")
+
+@app.get("/tasks/name/{id}")
+def get_tasks_name(id:int,db:Session=Depends(get_db)):
+    a=logic.get_tasks_name_logic(db=db,id=id)
+    return a
+
+@app.get("/tasks/description/{id}")
+def get_tasks_description(id:int,db:Session=Depends(get_db)):
+    a=logic.get_tasks_description_logic(db=db,id=id)
+    return a
+
+@app.get("/tasks/point/{id}")
+def get_tasks_point(id:int,db:Session=Depends(get_db)):
+    a=logic.get_tasks_point_logic(db=db,id=id)
+    return a
+##########################TEST###############33
+@app.get("/test",response_model=schema.TestReturn)
+def get_test(db:Session=Depends(get_db)):
+    a=logic.get_all_test(db=db)
+    json_compatible_item_data = jsonable_encoder(a)
+    return JSONResponse(content=json_compatible_item_data)
+    
+
+@app.post("/test")
+def get_test(test:schema.Test,password:int,db:Session=Depends(get_db)):
+    a=logic.post_test_logic(db=db,password=password,test=test)
+    return a
+
+@app.put("/make_user_worked_test")
+def change_user_worked_test(db:Session=Depends(get_db),user=Depends(get_current_user)):
+    foo=logic.change_user_worked_test_into_true(db,user.username)
+    return foo
+@app.post("/work_test")
+def try_work_test(answer:str,id:int,db:Session=Depends(get_db),user=Depends(get_current_user)):#id is  which number of test user is working
+    answer_counter=0
+    if user.worked_test==True:
+        return "you are not allowed to work test because you are already worked this test"
+    else:
+        answer_real=logic.post_test(db=db,id=id,answer=answer)
+        for a in range(10):
+            if answer_real==True:
+                answer_counter=answer_counter+1
+            else :
+                answer_counter
+        if answer_counter>=7:
+            return logic.change_user_point(db=db,username=user.username)
+        else :
+            return "you are not worked over 7"
+
+
+
+            
 
