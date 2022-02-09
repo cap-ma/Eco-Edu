@@ -10,13 +10,13 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from database.db import SessionLocal
-from models import model
-from schemas import schema
-from database import db 
+from app.database.db import SessionLocal
+from app.models import model
+from app.schemas import schema
+
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-import sqlalchemy
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -119,7 +119,7 @@ def post_test_logic(db:Session,password:int,test:schema.Test):
 def get_all_test(db:Session):
     obj=db.query(model.Test).all()
     return obj
-    
+
 def post_test(db:Session,id:int,answer:str):
     real_answer=db.query(model.Test).filter(model.Test.id==id).first()
     if real_answer.answer==answer:

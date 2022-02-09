@@ -4,28 +4,28 @@ from fastapi.responses import FileResponse, RedirectResponse
 from twilio.rest import Client
 from datetime import datetime, timedelta
 from typing import Optional
-from database import db as datahub
-from logics import logic
+from app.database import db as datahub
+from app.logics import logic
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from models import model
-from schemas import schema
+
+from app.schemas import schema
 from dotenv import load_dotenv
 import os 
-import config 
+
 import shutil
 from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-settings = config.Settings()
+
 
 app = FastAPI()
-client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
+
 
 load_dotenv("C:\repositories\Eco-Edu_github\Eco-Edu\app\.env")
 SECRET_KEY=os.environ.get("SECRET_KEY")
@@ -34,12 +34,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES_STR=os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
 ACCESS_TOKEN_EXPIRE_MINUTES=int(ACCESS_TOKEN_EXPIRE_MINUTES_STR)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-class foo(BaseModel):
-    id:int
-    class Config:
-        orm_mode = True
 
 
 def get_db():
