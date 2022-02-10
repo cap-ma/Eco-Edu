@@ -1,11 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv     
 from dotenv import load_dotenv
-import os 
+import os
 
-SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL")
+load_dotenv(r"C:\repositories\Eco-Edu_github\Eco-Edu\Eco-Edu\app\.env")
+
+SQLALCHEMY_DATABASE_URL=os.environ.get("DATABASE_URL")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL

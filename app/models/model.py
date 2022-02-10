@@ -1,6 +1,3 @@
-
-
-
 from sqlalchemy import Column ,ForeignKey, Integer , String ,DateTime,Boolean
 from app.database.db import Base
 
@@ -12,7 +9,7 @@ class User(Base):
     email=Column(String)
     hashed_password=Column(String)
     is_active=Column(Boolean,default=True)
-    worked_test=Column(Boolean)  #if the number of tests are increased here we can change boolean inot list of integers where we create worked tests of user we save and recheck if user worked the numbered test or not 
+    worked_test=Column(Boolean,default=False)  #if the number of tests are increased here we can change boolean inot list of integers where we create worked tests of user we save and recheck if user worked the numbered test or not 
     point=Column(Integer,default=5)
 
 class Task(Base):
